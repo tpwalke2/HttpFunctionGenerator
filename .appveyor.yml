@@ -1,0 +1,29 @@
+#---------------------------------#
+#  Build Image                    #
+#---------------------------------#
+image: Visual Studio 2022
+
+#---------------------------------#
+#  Build Script                   #
+#---------------------------------#
+build_script:
+
+# Tests
+test: off
+
+#---------------------------------#
+#        Branches to build        #
+#---------------------------------#
+branches:
+  # Allowed list
+  only:
+    - main
+    - develop
+    - /release/.*/
+    - /hotfix/.*/
+
+#---------------------------------#
+#  Build Cache                    #
+#---------------------------------#
+cache:
+  - Source\packages -> Source\**\packages.config
