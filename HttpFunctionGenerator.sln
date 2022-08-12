@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpFunctionGenerator", "HttpFunctionGenerator\HttpFunctionGenerator.csproj", "{C347B18C-F114-4DFB-9620-83FE220005B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpFunctionGeneratorTests", "HttpFunctionGeneratorTests\HttpFunctionGeneratorTests.csproj", "{742D0429-4936-4600-ACDE-865FF7AB1234}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneratedHttpFunctionTest", "GeneratedHttpFunctionTest\GeneratedHttpFunctionTest.csproj", "{4C6C3838-4853-42C9-8DD6-9646E829D46E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C347B18C-F114-4DFB-9620-83FE220005B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C347B18C-F114-4DFB-9620-83FE220005B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C347B18C-F114-4DFB-9620-83FE220005B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C347B18C-F114-4DFB-9620-83FE220005B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{742D0429-4936-4600-ACDE-865FF7AB1234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{742D0429-4936-4600-ACDE-865FF7AB1234}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{742D0429-4936-4600-ACDE-865FF7AB1234}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{742D0429-4936-4600-ACDE-865FF7AB1234}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C6C3838-4853-42C9-8DD6-9646E829D46E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C6C3838-4853-42C9-8DD6-9646E829D46E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C6C3838-4853-42C9-8DD6-9646E829D46E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C6C3838-4853-42C9-8DD6-9646E829D46E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
