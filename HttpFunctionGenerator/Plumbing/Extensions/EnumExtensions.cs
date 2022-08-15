@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
-namespace HttpFunctionGenerator;
+namespace HttpFunctionGenerator.Plumbing.Extensions;
 
-public static class Extensions
+public static class EnumExtensions
 {
     public static string Description(this Enum value)
     {

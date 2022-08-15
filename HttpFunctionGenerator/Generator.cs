@@ -1,4 +1,12 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using HttpFunctionGenerator.Plumbing.Extensions;
+using HttpFunctionGenerator.SourceProviders;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace HttpFunctionGenerator;
 
@@ -25,5 +33,42 @@ public class Generator : ISourceGenerator
         }
 
         var attributeSymbol = context.Compilation.GetTypeByMetadataName("HttpFunction.HttpFunctionAttribute");
+        
+        foreach (var classDeclarationSyntax in receiver.CandidateClasses)
+        {
+            var publicMembers = classDeclarationSyntax
+                .Members
+                .Where(member => member.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
+                .ToList();
+
+            if (!publicMembers.Any())
+                context.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.NoMethod(classDeclarationSyntax.Identifier.ValueText),
+                    classDeclarationSyntax.GetLocation()));
+            
+            context.AddSource(
+                $"{classDeclarationSyntax.Identifier.ValueText}_Functions.g.cs",
+                CreateFunctionClass(classDeclarationSyntax, publicMembers, context));
+        }
+    }
+
+    private SourceText CreateFunctionClass(
+        ClassDeclarationSyntax classDeclarationSyntax,
+        IList<MemberDeclarationSyntax> publicMembers,
+        GeneratorExecutionContext context)
+    {
+        var namespaceName = classDeclarationSyntax.NamedTypeSymbol(context.Compilation).ContainingNamespace.ToDisplayString();
+        
+        var source = new StringBuilder($@"
+using System;
+
+namespace {namespaceName};
+
+public class {classDeclarationSyntax.Identifier.ValueText}_Functions
+{{
+}}
+");
+
+        return SourceText.From(source.ToString(), Encoding.UTF8);
     }
 }

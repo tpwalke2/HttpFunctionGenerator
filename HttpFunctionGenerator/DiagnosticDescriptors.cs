@@ -1,3 +1,4 @@
+using HttpFunctionGenerator.Plumbing.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -16,10 +17,10 @@ public static class DiagnosticDescriptors
                 isEnabledByDefault: true);
         }
 
-        public static DiagnosticDescriptor NoMethod(string className, string id)
+        public static DiagnosticDescriptor NoMethod(string className)
         {
             return new DiagnosticDescriptor(
-                 $"{id}",
+                ErrorReason.NoMethod.Description(),
                 "Base",
                 $"{className} has no public methods",
                 "Compilation",

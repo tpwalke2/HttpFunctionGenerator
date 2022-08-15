@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
 
-namespace HttpFunctionGenerator;
+namespace HttpFunctionGenerator.SourceProviders;
 
 public static class AttributeSourceProvider
 {
@@ -19,6 +19,4 @@ namespace HttpFunction
 }
 ",
         Encoding.UTF8);
-    
-    
 }

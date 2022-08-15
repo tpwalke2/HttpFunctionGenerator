@@ -1,4 +1,5 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,14 @@ public class SyntaxReceiver : ISyntaxContextReceiver
         if (context.Node is not ClassDeclarationSyntax classDeclarationSyntax
             || !classDeclarationSyntax.AttributeLists.Any()) return;
         
-        var x = context.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax);
-        if (x.GetAttributes().Any(ad => ad.AttributeClass.ToDisplayString().Equals("HttpFunction.HttpFunctionAttribute")))
-        {
-            _candidateClasses.Add(classDeclarationSyntax);
-        }
+        var x = ModelExtensions.GetDeclaredSymbol(context.SemanticModel, classDeclarationSyntax);
+        if (x != null
+            && !x.GetAttributes().Any(ad => ad.AttributeClass != null
+                                            && ad.AttributeClass.ToDisplayString().Equals("HttpFunction.HttpFunctionAttribute")))
+            return;
+
+        if (!classDeclarationSyntax.Modifiers.Any(y => y.IsKind(SyntaxKind.PublicKeyword))) return;
+        
+        _candidateClasses.Add(classDeclarationSyntax);
     }
 }

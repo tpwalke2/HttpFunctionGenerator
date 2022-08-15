@@ -1,30 +1,27 @@
-using HttpFunctionGenerator;
 using Microsoft.CodeAnalysis;
 using System.Linq;
 using Xunit;
 
 namespace HttpFunctionGeneratorTests;
 
-public class GeneratorTests
+public class GeneratorSimpleFunctionTests
 {
     [Fact]
-    public void TestNoAttribute()
+    public void CreateSingleContainerClass()
     {
         const string source = @"
-class C { }
-";
-        var result = GeneratorTestFactory.RunGenerator(source);
-        Assert.False(result.Diagnostics.Any(x => x.Severity == DiagnosticSeverity.Error));
-    }
+using HttpFunction;
 
-    [Fact]
-    public void TestWithAttributeNoMethod()
-    {
-        const string source = @"
+namespace HttpFunctionGeneratorTest;
+
 [HttpFunction]
-class C { }
-";
+public class C {
+    public void CreateResource() {}
+}";
         var result = GeneratorTestFactory.RunGenerator(source);
-        Assert.True(result.Diagnostics.Any(x => x.Id == GeneratorException.Reason.NoMethod.Description()));
+        Assert.Empty(result.Diagnostics);
+
+        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        Assert.Single(s);
     }
 }
