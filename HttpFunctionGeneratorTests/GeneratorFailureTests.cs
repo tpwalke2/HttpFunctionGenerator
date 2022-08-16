@@ -16,6 +16,7 @@ public class C { }
 ";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.False(result.Diagnostics.Any(x => x.Severity == DiagnosticSeverity.Error));
+        Assert.Equal(2, result.Compilation.SyntaxTrees.Count());
     }
     
     [Fact]
@@ -31,6 +32,7 @@ class C { }
 ";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.False(result.Diagnostics.Any(x => x.Severity == DiagnosticSeverity.Error));
+        Assert.Equal(2, result.Compilation.SyntaxTrees.Count());
     }
 
     [Fact]
@@ -46,5 +48,6 @@ public class C {}";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.Single(result.Diagnostics);
         Assert.Equal("HFG100", result.Diagnostics[0].Id);
+        Assert.Equal(2, result.Compilation.SyntaxTrees.Count());
     }
 }

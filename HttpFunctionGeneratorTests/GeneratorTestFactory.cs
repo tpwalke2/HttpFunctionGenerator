@@ -21,8 +21,7 @@ public static class GeneratorTestFactory
 
         var references = new MetadataReference[]
         {
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            //MetadataReference.CreateFromFile(typeof(IReactiveProperty).Assembly.Location)
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
         };
 
         Compilation compilation = CSharpCompilation.Create("testgenerator", new[] { syntaxTree }, references, compilationOptions);

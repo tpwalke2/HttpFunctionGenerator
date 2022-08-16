@@ -32,7 +32,7 @@ public class Generator : ISourceGenerator
             return;
         }
 
-        var attributeSymbol = context.Compilation.GetTypeByMetadataName("HttpFunction.HttpFunctionAttribute");
+        //var attributeSymbol = context.Compilation.GetTypeByMetadataName("HttpFunction.HttpFunctionAttribute");
         
         foreach (var classDeclarationSyntax in receiver.CandidateClasses)
         {
@@ -42,10 +42,14 @@ public class Generator : ISourceGenerator
                 .ToList();
 
             if (!publicMembers.Any())
+            {
                 context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.NoMethod(classDeclarationSyntax.Identifier.ValueText),
-                    classDeclarationSyntax.GetLocation()));
-            
+                                             DiagnosticDescriptors.NoMethod(
+                                                 classDeclarationSyntax.Identifier.ValueText),
+                                             classDeclarationSyntax.GetLocation()));
+                continue;
+            }
+
             context.AddSource(
                 $"{classDeclarationSyntax.Identifier.ValueText}_Functions.g.cs",
                 CreateFunctionClass(classDeclarationSyntax, publicMembers, context));
@@ -59,8 +63,7 @@ public class Generator : ISourceGenerator
     {
         var namespaceName = classDeclarationSyntax.NamedTypeSymbol(context.Compilation).ContainingNamespace.ToDisplayString();
         
-        var source = new StringBuilder($@"
-using System;
+        var source = new StringBuilder($@"using System;
 
 namespace {namespaceName};
 

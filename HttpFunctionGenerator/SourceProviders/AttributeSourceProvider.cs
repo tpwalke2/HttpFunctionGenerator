@@ -5,8 +5,8 @@ namespace HttpFunctionGenerator.SourceProviders;
 
 public static class AttributeSourceProvider
 {
-    public static SourceText FunctionAttributeSource() => SourceText.From(@"
-using System;
+    public static SourceText FunctionAttributeSource() => SourceText.From(@"using System;
+
 namespace HttpFunction
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
