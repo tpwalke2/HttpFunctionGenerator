@@ -1,5 +1,3 @@
-using Microsoft.CodeAnalysis;
-using System.Linq;
 using Xunit;
 
 namespace HttpFunctionGeneratorTests;
