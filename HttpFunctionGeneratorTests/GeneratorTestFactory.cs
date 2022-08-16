@@ -7,6 +7,14 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System.Collections.Generic;
 
+/* 
+ * Adapted from BlazorSourceGeneratorTests
+ * https://github.com/b-straub/BlazorSourceGeneratorTests/blob/master/Tests/GeneratorTestFactory.cs
+ *
+ * MIT License
+ * Copyright (c) 2020 b-straub
+ */
+
 namespace HttpFunctionGeneratorTests;
 
 public static class GeneratorTestFactory
