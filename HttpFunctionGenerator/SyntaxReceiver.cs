@@ -19,7 +19,7 @@ public class SyntaxReceiver : ISyntaxContextReceiver
         var x = ModelExtensions.GetDeclaredSymbol(context.SemanticModel, classDeclarationSyntax);
         if (x != null
             && !x.GetAttributes().Any(ad => ad.AttributeClass != null
-                                            && ad.AttributeClass.ToDisplayString().Equals("HttpFunction.HttpFunctionAttribute")))
+                                            && ad.AttributeClass.ToDisplayString().Equals("HttpFunction.Attributes.HttpFunctionAttribute")))
             return;
 
         if (!classDeclarationSyntax.Modifiers.Any(y => y.IsKind(SyntaxKind.PublicKeyword))) return;

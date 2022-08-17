@@ -22,7 +22,7 @@ public static class DiagnosticDescriptors
             return new DiagnosticDescriptor(
                 ErrorReason.NoMethod.Description(),
                 "Base",
-                $"{className} has no public methods",
+                $"{className} has no public methods with the correct return type",
                 "Compilation",
                 DiagnosticSeverity.Warning,
                 isEnabledByDefault: true);

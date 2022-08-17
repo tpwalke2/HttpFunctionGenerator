@@ -16,7 +16,11 @@ public class Generator : ISourceGenerator
     public void Initialize(GeneratorInitializationContext context)
     {
         // register known fixed source
-        context.RegisterForPostInitialization(i => i.AddSource("HttpFunctionAttribute.g.cs", AttributeSourceProvider.FunctionAttributeSource()));
+        context.RegisterForPostInitialization(i =>
+        {
+            i.AddSource("HttpFunctionAttribute.g.cs", AttributeSourceProvider.FunctionAttributeSource());
+            i.AddSource("Outcome.g.cs", OutcomeSourceProvider.OutcomeSource());
+        });
 
         // register a receive to accumulate nodes of interest
         context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());

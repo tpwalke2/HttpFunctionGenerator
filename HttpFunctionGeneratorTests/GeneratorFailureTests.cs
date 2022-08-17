@@ -16,14 +16,15 @@ public class C { }
 ";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.False(result.Diagnostics.Any(x => x.Severity == DiagnosticSeverity.Error));
-        Assert.Equal(2, result.Compilation.SyntaxTrees.Count());
+        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        Assert.Empty(s);
     }
     
     [Fact]
     public void TestNoPublicClass()
     {
         const string source = @"
-using HttpFunction;
+using HttpFunction.Attributes;
 
 namespace HttpFunctionGeneratorTest;
 
@@ -32,14 +33,15 @@ class C { }
 ";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.False(result.Diagnostics.Any(x => x.Severity == DiagnosticSeverity.Error));
-        Assert.Equal(2, result.Compilation.SyntaxTrees.Count());
+        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        Assert.Empty(s);
     }
 
     [Fact]
     public void TestWithAttributeNoMethod()
     {
         const string source = @"
-using HttpFunction;
+using HttpFunction.Attributes;
 
 namespace HttpFunctionGeneratorTest;
 
@@ -48,6 +50,7 @@ public class C {}";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.Single(result.Diagnostics);
         Assert.Equal("HFG100", result.Diagnostics[0].Id);
-        Assert.Equal(2, result.Compilation.SyntaxTrees.Count());
+        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        Assert.Empty(s);
     }
 }

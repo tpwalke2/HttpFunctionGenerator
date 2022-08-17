@@ -8,13 +8,16 @@ public class GeneratorSimpleFunctionTests
     public void CreateSingleContainerClass()
     {
         const string source = @"
-using HttpFunction;
+using HttpFunction.Attributes;
+using HttpFunction.Models;
 
 namespace HttpFunctionGeneratorTest;
 
 [HttpFunction]
 public class C {
-    public void CreateResource() {}
+    public Outcome CreateResource() {
+        return new Outcome(Status.Created);
+    }
 }";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.Empty(result.Diagnostics);

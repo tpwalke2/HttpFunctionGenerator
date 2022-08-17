@@ -1,4 +1,4 @@
-﻿using HttpFunction;
+﻿using HttpFunction.Attributes;
 
 namespace GeneratedHttpFunctionTest;
 
