@@ -1,11 +1,11 @@
-using System.Collections.Immutable;
-using System.Linq;
-using System.Text;
 using HttpFunctionGenerator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Text;
 
 /* 
  * Adapted from BlazorSourceGeneratorTests
@@ -19,7 +19,9 @@ namespace HttpFunctionGeneratorTests;
 
 public static class GeneratorTestFactory
 {
-    public static (Compilation Compilation, ImmutableArray<Diagnostic> Diagnostics) RunGenerator(string source)
+    public static (Compilation Compilation,
+        (ImmutableArray<Diagnostic> Before, ImmutableArray<Diagnostic> After) Diagnostics,
+        GeneratorDriverRunResult RunResult) RunGenerator(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(source, Encoding.UTF8));
 
@@ -34,24 +36,24 @@ public static class GeneratorTestFactory
 
         Compilation compilation = CSharpCompilation.Create("testgenerator", new[] { syntaxTree }, references, compilationOptions);
         var diagnostics = compilation.GetDiagnostics();
-        if (!VerifyDiagnostics(diagnostics, "CS0012", "CS0616", "CS0246"))
+        if (!VerifyDiagnostics(diagnostics, "CS0012", "CS0616", "CS0246", "CS0103"))
         {
             // this will make the test fail, check the input source code!
-            return (null, diagnostics);
+            return (null, (diagnostics, default), null);
         }
 
         var generator = new Generator();
         var parseOptions = syntaxTree.Options as CSharpParseOptions;
 
         var driver = CSharpGeneratorDriver.Create(
-            ImmutableArray.Create<ISourceGenerator>(generator),
-            ImmutableArray<AdditionalText>.Empty,
-            parseOptions);
-        driver.RunGeneratorsAndUpdateCompilation(compilation,
-            out var outputCompilation,
-            out var generatorDiagnostics);
+                ImmutableArray.Create<ISourceGenerator>(generator),
+                ImmutableArray<AdditionalText>.Empty,
+                parseOptions)
+            .RunGeneratorsAndUpdateCompilation(compilation,
+                out var outputCompilation,
+                out var generatorDiagnostics);
 
-        return (outputCompilation, generatorDiagnostics);
+        return (outputCompilation, (diagnostics, generatorDiagnostics), driver.GetRunResult());
     }
 
     private static bool VerifyDiagnostics(ImmutableArray<Diagnostic> actual, params string[] expected)

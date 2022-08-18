@@ -3,7 +3,7 @@
 namespace GeneratedHttpFunctionTest;
 
 [HttpFunction]
-public class Users
+public class UsersController
 {
     
 }

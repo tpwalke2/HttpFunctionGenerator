@@ -15,7 +15,7 @@ namespace HttpFunctionGeneratorTest;
 public class C { }
 ";
         var result = GeneratorTestFactory.RunGenerator(source);
-        Assert.False(result.Diagnostics.Any(x => x.Severity == DiagnosticSeverity.Error));
+        Assert.False(result.Diagnostics.After.Any(x => x.Severity == DiagnosticSeverity.Error));
         var s = result.Compilation.GetSymbolsWithName("C_Functions");
         Assert.Empty(s);
     }
@@ -32,7 +32,7 @@ namespace HttpFunctionGeneratorTest;
 class C { }
 ";
         var result = GeneratorTestFactory.RunGenerator(source);
-        Assert.False(result.Diagnostics.Any(x => x.Severity == DiagnosticSeverity.Error));
+        Assert.False(result.Diagnostics.After.Any(x => x.Severity == DiagnosticSeverity.Error));
         var s = result.Compilation.GetSymbolsWithName("C_Functions");
         Assert.Empty(s);
     }
@@ -48,8 +48,46 @@ namespace HttpFunctionGeneratorTest;
 [HttpFunction]
 public class C {}";
         var result = GeneratorTestFactory.RunGenerator(source);
-        Assert.Single(result.Diagnostics);
-        Assert.Equal("HFG100", result.Diagnostics[0].Id);
+        Assert.Single(result.Diagnostics.After);
+        Assert.Equal("HFG100", result.Diagnostics.After[0].Id);
+        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        Assert.Empty(s);
+    }
+    
+    [Fact]
+    public void TestWithAttributeNoPublicMethod()
+    {
+        const string source = @"
+using HttpFunction.Attributes;
+
+namespace HttpFunctionGeneratorTest;
+
+[HttpFunction]
+public class C {
+    private void DoSomething() {}
+}";
+        var result = GeneratorTestFactory.RunGenerator(source);
+        Assert.Single(result.Diagnostics.After);
+        Assert.Equal("HFG100", result.Diagnostics.After[0].Id);
+        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        Assert.Empty(s);
+    }
+    
+    [Fact]
+    public void TestWithAttributeNoPublicMethodOfCorrectReturnType()
+    {
+        const string source = @"
+using HttpFunction.Attributes;
+
+namespace HttpFunctionGeneratorTest;
+
+[HttpFunction]
+public class C {
+    public void DoSomething() {}
+}";
+        var result = GeneratorTestFactory.RunGenerator(source);
+        Assert.Single(result.Diagnostics.After);
+        Assert.Equal("HFG100", result.Diagnostics.After[0].Id);
         var s = result.Compilation.GetSymbolsWithName("C_Functions");
         Assert.Empty(s);
     }
