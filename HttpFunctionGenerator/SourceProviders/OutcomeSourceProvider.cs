@@ -5,13 +5,13 @@ namespace HttpFunctionGenerator.SourceProviders;
 
 public static class OutcomeSourceProvider
 {
-    public static SourceText OutcomeSource() => SourceText.From(@"namespace HttpFunction.Models;
+    public static SourceText OutcomeSource() => SourceText.From($@"namespace {Constants.PackageBaseName}.Models;
 
 public record Outcome(Status Status, string Message = null);
 public record Outcome<TResult>(Status Status, TResult Result = default, string Message = null) : Outcome(Status, Message);
 
 public enum Status
-{
+{{
     UnknownError,
     InvalidInput,
     NoContent,
@@ -20,6 +20,6 @@ public enum Status
     Updated,
     Deleted,
     Success
-}",
+}}",
         Encoding.UTF8);
 }

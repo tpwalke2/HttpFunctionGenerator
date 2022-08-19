@@ -5,16 +5,16 @@ namespace HttpFunctionGenerator.SourceProviders;
 
 public static class AttributeSourceProvider
 {
-    public static SourceText FunctionAttributeSource() => SourceText.From(@"using System;
+    public static SourceText FunctionAttributeSource() => SourceText.From($@"using System;
 
-namespace HttpFunction.Attributes;
+namespace {Constants.PackageBaseName}.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 sealed class HttpFunctionAttribute : Attribute
-{
+{{
     public HttpFunctionAttribute()
-    {
-    }
-}",
+    {{
+    }}
+}}",
         Encoding.UTF8);
 }

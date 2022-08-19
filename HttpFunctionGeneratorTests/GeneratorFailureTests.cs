@@ -1,3 +1,4 @@
+using HttpFunctionGenerator;
 using Microsoft.CodeAnalysis;
 using System.Linq;
 using Xunit;
@@ -23,13 +24,13 @@ public class C { }
     [Fact]
     public void TestNoPublicClass()
     {
-        const string source = @"
-using HttpFunction.Attributes;
+        var source = $@"
+using {Constants.PackageBaseName}.Attributes;
 
 namespace HttpFunctionGeneratorTest;
 
 [HttpFunction]
-class C { }
+class C {{}}
 ";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.False(result.Diagnostics.After.Any(x => x.Severity == DiagnosticSeverity.Error));
@@ -40,13 +41,13 @@ class C { }
     [Fact]
     public void TestWithAttributeNoMethod()
     {
-        const string source = @"
-using HttpFunction.Attributes;
+        var source = $@"
+using {Constants.PackageBaseName}.Attributes;
 
 namespace HttpFunctionGeneratorTest;
 
 [HttpFunction]
-public class C {}";
+public class C {{}}";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.Single(result.Diagnostics.After);
         Assert.Equal("HFG100", result.Diagnostics.After[0].Id);
@@ -57,15 +58,15 @@ public class C {}";
     [Fact]
     public void TestWithAttributeNoPublicMethod()
     {
-        const string source = @"
-using HttpFunction.Attributes;
+        var source = $@"
+using {Constants.PackageBaseName}.Attributes;
 
 namespace HttpFunctionGeneratorTest;
 
 [HttpFunction]
-public class C {
-    private void DoSomething() {}
-}";
+public class C {{
+    private void DoSomething() {{}}
+}}";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.Single(result.Diagnostics.After);
         Assert.Equal("HFG100", result.Diagnostics.After[0].Id);
@@ -76,15 +77,15 @@ public class C {
     [Fact]
     public void TestWithAttributeNoPublicMethodOfCorrectReturnType()
     {
-        const string source = @"
-using HttpFunction.Attributes;
+        var source = $@"
+using {Constants.PackageBaseName}.Attributes;
 
 namespace HttpFunctionGeneratorTest;
 
 [HttpFunction]
-public class C {
-    public void DoSomething() {}
-}";
+public class C {{
+    public void DoSomething() {{}}
+}}";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.Single(result.Diagnostics.After);
         Assert.Equal("HFG100", result.Diagnostics.After[0].Id);

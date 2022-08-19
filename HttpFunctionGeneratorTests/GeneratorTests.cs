@@ -13,17 +13,17 @@ namespace HttpFunctionGeneratorTests;
 
 public class GeneratorSimpleFunctionTests
 {
-    private const string Source = @"using HttpFunction.Attributes;
-using HttpFunction.Models;
+    private static readonly string Source = $@"using {Constants.PackageBaseName}.Attributes;
+using {Constants.PackageBaseName}.Models;
 
 namespace HttpFunctionGeneratorTest;
 
 [HttpFunction]
-public class C {
-    public Outcome CreateResource() {
+public class C {{
+    public Outcome CreateResource() {{
         return new Outcome(Status.Created);
-    }
-}";
+    }}
+}}";
 
     [Fact]
     public void ShouldNotHaveDiagnosticErrors()
@@ -43,20 +43,20 @@ public class C {
     [Fact]
     public void ShouldBuildSingleMethod()
     {
-        const string expected = @"using HttpFunction.Mapping;
+        var expected = $@"using {Constants.PackageBaseName}.Mapping;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
 namespace HttpFunctionGeneratorTest;
 
 public class C_Functions
-{
+{{
     private readonly C _controller;
 
     public C_Functions(C controller)
-    {
+    {{
         _controller = controller;
-    }
+    }}
 
     [Function(""CreateResource"")]
     public HttpResponseData Run(
@@ -65,11 +65,11 @@ public class C_Functions
             ""post"",
             Route = null)] HttpRequestData req,
         FunctionContext executionContext)
-    {
+    {{
         var outcome = _controller.CreateResource();
         return req.CreateResponse(outcome);
-    }
-}";
+    }}
+}}";
         
         var result = GeneratorTestFactory.RunGenerator(Source);
         Assert.Equal(expected, result.RunResult.GeneratedTrees.First(t => t.FilePath.Contains("C_Functions")).GetText().ToString());
