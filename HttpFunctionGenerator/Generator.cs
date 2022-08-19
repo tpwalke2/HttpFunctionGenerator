@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,8 +44,7 @@ public class Generator : ISourceGenerator
             return;
         }
 
-        //var attributeSymbol = context.Compilation.GetTypeByMetadataName("HttpFunction.Attributes.HttpFunctionAttribute");
-        var outcomeTypeSymbol = context.Compilation.GetTypeByMetadataName("HttpFunction.Models.Outcome");
+        var outcomeTypeSymbol = context.Compilation.GetTypeByMetadataName($"{Constants.PackageBaseName}.Models.Outcome");
         
         foreach (var classDeclarationSyntax in receiver.CandidateClasses)
         {
@@ -53,11 +53,8 @@ public class Generator : ISourceGenerator
                 .Where(member => member.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
                 .Where(member => member.IsKind(SyntaxKind.MethodDeclaration))
                 .Cast<MethodDeclarationSyntax>()
-                .Where(method => SymbolEqualityComparer
-                    .Default
-                    .Equals(
-                        method.GetReturnType(context.Compilation.GetSemanticModel(method.SyntaxTree)),
-                        outcomeTypeSymbol))
+                .Select(method => (method, method.GetReturnType(context.Compilation.GetSemanticModel(method.SyntaxTree))))
+                .Where(x => HasValidReturnType(x.Item2, outcomeTypeSymbol))
                 .ToList();
 
             if (!publicMethods.Any())
@@ -71,20 +68,41 @@ public class Generator : ISourceGenerator
 
             context.AddSource(
                 $"{classDeclarationSyntax.Identifier.ValueText}_Functions.g.cs",
-                CreateFunctionClass(classDeclarationSyntax, publicMethods, context));
+                BuildFunctionClass(classDeclarationSyntax, publicMethods, context));
         }
     }
 
-    private static SourceText CreateFunctionClass(
+    private static bool HasValidReturnType(
+        ITypeSymbol methodReturnTypeSymbol,
+        ITypeSymbol outcomeTypeSymbol)
+    {
+        if (methodReturnTypeSymbol.IsAssignableFrom(outcomeTypeSymbol)) return true;
+
+        if (methodReturnTypeSymbol is not INamedTypeSymbol { IsGenericType: true } namedTypeSymbol) return false;
+
+        return namedTypeSymbol.TypeArguments.Length == 1 
+               && namedTypeSymbol.TypeArguments[0].IsAssignableFrom(outcomeTypeSymbol);
+    }
+
+    private static SourceText BuildFunctionClass(
         ClassDeclarationSyntax classDeclarationSyntax,
-        IList<MethodDeclarationSyntax> publicMethods,
+        IEnumerable<(MethodDeclarationSyntax Method, ITypeSymbol ReturnType)> publicMethods,
         GeneratorExecutionContext context)
     {
         var namespaceName = classDeclarationSyntax.NamedTypeSymbol(context.Compilation).ContainingNamespace.ToDisplayString();
 
-        var source = new StringBuilder($@"using HttpFunction.Mapping;
+        var builtMethods = publicMethods
+            .Select(pm => BuildFunctionMethod(pm, context))
+            .ToList();
+
+        var asyncUsing = builtMethods.Any(x => x.IsAsync)
+            ? @"
+using System.Threading.Tasks;"
+            : "";
+
+        var source = new StringBuilder($@"using {Constants.PackageBaseName}.Mapping;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.Functions.Worker.Http;{asyncUsing}
 
 namespace {namespaceName};
 
@@ -97,25 +115,43 @@ public class {classDeclarationSyntax.Identifier.ValueText}_Functions
         _controller = controller;
     }}
 ");
-        
-        publicMethods.ForEach(pm =>
-        {
-            source.AppendLine($@"
-    [Function(""{pm.Identifier.Text}"")]
-    public HttpResponseData Run(
-        [HttpTrigger(
-            AuthorizationLevel.Function,
-            ""post"",
-            Route = null)] HttpRequestData req,
-        FunctionContext executionContext)
-    {{
-        var outcome = _controller.{pm.Identifier.Text}();
-        return req.CreateResponse(outcome);
-    }}");
-        });
+
+        builtMethods.ForEach(x => source.AppendLine(x.MethodText));
         
         source.Append(@"}");
 
         return SourceText.From(source.ToString(), Encoding.UTF8);
+    }
+
+    private static (bool IsAsync, string MethodText) BuildFunctionMethod(
+        (MethodDeclarationSyntax Method, ITypeSymbol ReturnType) methodInfo,
+        GeneratorExecutionContext context)
+    {
+        var methodName = methodInfo.Method.Identifier.Text;
+        var verb = methodName.StartsWith("Get", StringComparison.OrdinalIgnoreCase)
+            ? "get"
+            : "post";
+
+            var taskSymbol = context.Compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+        var isAsync = methodInfo.ReturnType.InheritsFrom(taskSymbol);
+        
+        var returnType = isAsync
+            ? "async Task<HttpResponseData>"
+            : "HttpResponseData";
+        var awaitPrefix = isAsync ? "await " : "";
+        var asyncSuffix = isAsync ? "Async" : "";
+
+        return (isAsync, $@"
+    [Function(""{methodName}"")]
+    public {returnType} Run{asyncSuffix}(
+        [HttpTrigger(
+            AuthorizationLevel.Function,
+            ""{verb}"",
+            Route = null)] HttpRequestData req,
+        FunctionContext executionContext)
+    {{
+        var outcome = {awaitPrefix}_controller.{methodName}();
+        return {awaitPrefix}req.CreateResponse(outcome);
+    }}");
     }
 }

@@ -1,30 +1,26 @@
 using HttpFunctionGenerator;
-using HttpFunctionGenerator.SourceProviders;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace HttpFunctionGeneratorTests;
 
-public class GeneratorSimpleFunctionTests
+public class GenerateSimpleGetFunctionTests
 {
     private static readonly string Source = $@"using {Constants.PackageBaseName}.Attributes;
 using {Constants.PackageBaseName}.Models;
+using System.Threading.Tasks;
 
 namespace HttpFunctionGeneratorTest;
 
+public record ResourceResult(string Name); 
+
 [HttpFunction]
 public class C {{
-    public Outcome CreateResource() {{
-        return new Outcome(Status.Created);
+    public Task<Outcome<ResourceResult>> GetResource() {{
+        return Task.FromResult(new Outcome<ResourceResult>(Status.Created, new ResourceResult(""John Doe"")));
     }}
 }}";
-
+    
     [Fact]
     public void ShouldNotHaveDiagnosticErrors()
     {
@@ -33,19 +29,12 @@ public class C {{
     }
 
     [Fact]
-    public void ShouldCreateSingleContainerClass()
-    {
-        var result = GeneratorTestFactory.RunGenerator(Source);
-        var s = result.Compilation.GetSymbolsWithName("C_Functions");
-        Assert.Single(s);
-    }
-    
-    [Fact]
-    public void ShouldBuildSingleMethod()
+    public void ShouldBuildGetFunction()
     {
         var expected = $@"using {Constants.PackageBaseName}.Mapping;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Threading.Tasks;
 
 namespace HttpFunctionGeneratorTest;
 
@@ -58,16 +47,16 @@ public class C_Functions
         _controller = controller;
     }}
 
-    [Function(""CreateResource"")]
-    public HttpResponseData Run(
+    [Function(""GetResource"")]
+    public async Task<HttpResponseData> RunAsync(
         [HttpTrigger(
             AuthorizationLevel.Function,
-            ""post"",
+            ""get"",
             Route = null)] HttpRequestData req,
         FunctionContext executionContext)
     {{
-        var outcome = _controller.CreateResource();
-        return req.CreateResponse(outcome);
+        var outcome = await _controller.GetResource();
+        return await req.CreateResponse(outcome);
     }}
 }}";
         
