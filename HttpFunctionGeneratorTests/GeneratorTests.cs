@@ -43,7 +43,7 @@ public class C {
     [Fact]
     public void ShouldBuildSingleMethod()
     {
-        const string expected = @"using HttpFunction.Extensions;
+        const string expected = @"using HttpFunction.Mapping;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
@@ -60,7 +60,10 @@ public class C_Functions
 
     [Function(""CreateResource"")]
     public HttpResponseData Run(
-        [HttpTrigger(AuthorizationLevel.Function, ""post"", Route=null)] HttpRequestData req,
+        [HttpTrigger(
+            AuthorizationLevel.Function,
+            ""post"",
+            Route = null)] HttpRequestData req,
         FunctionContext executionContext)
     {
         var outcome = _controller.CreateResource();

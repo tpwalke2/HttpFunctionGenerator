@@ -21,6 +21,12 @@ public class Generator : ISourceGenerator
         {
             i.AddSource("HttpFunctionAttribute.g.cs", AttributeSourceProvider.FunctionAttributeSource());
             i.AddSource("Outcome.g.cs", OutcomeSourceProvider.OutcomeSource());
+            i.AddSource("JsonSerialization.g.cs", SerializationSourceProvider.JsonSerializationSource());
+            i.AddSource("HttpRequestDataOutputMappingExtension.g.cs", OutputMappingSourceProvider.HttpRequestDataMappingSource());
+            i.AddSource("ServiceCollectionExtensions.g.cs", ExtensionsSourceProvider.ServiceCollectionExtensionsSource());
+            i.AddSource("HostBuilderExtensions.g.cs", ExtensionsSourceProvider.HostBuilderConfigurationSource());
+            i.AddSource("EnumerableExtensions.g.cs", ExtensionsSourceProvider.EnumerableExtensionsSource());
+            i.AddSource("TypeHelpers.g.cs", HelpersSourceProvider.TypeHelpersSource());
         });
 
         // register a receive to accumulate nodes of interest
@@ -75,8 +81,8 @@ public class Generator : ISourceGenerator
         GeneratorExecutionContext context)
     {
         var namespaceName = classDeclarationSyntax.NamedTypeSymbol(context.Compilation).ContainingNamespace.ToDisplayString();
-        
-        var source = new StringBuilder($@"using HttpFunction.Extensions;
+
+        var source = new StringBuilder($@"using HttpFunction.Mapping;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
@@ -90,7 +96,25 @@ public class {classDeclarationSyntax.Identifier.ValueText}_Functions
     {{
         _controller = controller;
     }}
-}}");
+");
+        
+        publicMethods.ForEach(pm =>
+        {
+            source.AppendLine($@"
+    [Function(""{pm.Identifier.Text}"")]
+    public HttpResponseData Run(
+        [HttpTrigger(
+            AuthorizationLevel.Function,
+            ""post"",
+            Route = null)] HttpRequestData req,
+        FunctionContext executionContext)
+    {{
+        var outcome = _controller.{pm.Identifier.Text}();
+        return req.CreateResponse(outcome);
+    }}");
+        });
+        
+        source.Append(@"}");
 
         return SourceText.From(source.ToString(), Encoding.UTF8);
     }
