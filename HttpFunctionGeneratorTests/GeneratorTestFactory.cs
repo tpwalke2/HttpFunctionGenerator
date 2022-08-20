@@ -19,6 +19,11 @@ namespace HttpFunctionGeneratorTests;
 
 public static class GeneratorTestFactory
 {
+    private static readonly HashSet<string> IgnoredPreDiagnosticErrors = new()
+    {
+        "CS0012", "CS0616", "CS0246", "CS0103"
+    };
+
     public static (Compilation Compilation,
         (ImmutableArray<Diagnostic> Before, ImmutableArray<Diagnostic> After) Diagnostics,
         GeneratorDriverRunResult RunResult) RunGenerator(string source)
@@ -34,9 +39,9 @@ public static class GeneratorTestFactory
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
         };
 
-        Compilation compilation = CSharpCompilation.Create("testgenerator", new[] { syntaxTree }, references, compilationOptions);
+        Compilation compilation = CSharpCompilation.Create("TestGenerator", new[] { syntaxTree }, references, compilationOptions);
         var diagnostics = compilation.GetDiagnostics();
-        if (!VerifyDiagnostics(diagnostics, "CS0012", "CS0616", "CS0246", "CS0103"))
+        if (!VerifyDiagnostics(diagnostics))
         {
             // this will make the test fail, check the input source code!
             return (null, (diagnostics, default), null);
@@ -56,11 +61,10 @@ public static class GeneratorTestFactory
         return (outputCompilation, (diagnostics, generatorDiagnostics), driver.GetRunResult());
     }
 
-    private static bool VerifyDiagnostics(ImmutableArray<Diagnostic> actual, params string[] expected)
+    private static bool VerifyDiagnostics(ImmutableArray<Diagnostic> actual)
     {
-        var expectedMap = new HashSet<string>(expected);
         return actual.Where(d => d.Severity == DiagnosticSeverity.Error)
-            .Select(d => d.Id.ToString())
-            .All(expectedMap.Contains);
+                     .Select(d => d.Id.ToString())
+                     .All(IgnoredPreDiagnosticErrors.Contains);
     }
 }
