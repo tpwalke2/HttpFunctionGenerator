@@ -36,8 +36,17 @@ public class Generator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
+        var typeSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Azure.Functions.Worker.FunctionAttribute");
+        if (typeSymbol == null)
+        {
+            var loc = DiagnosticDescriptors.GetLocation(DiagnosticDescriptors.FilePath(),
+                DiagnosticDescriptors.LineNumber());
+            context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.MissingDependencies(), loc));
+            return;
+        }
+        
         // if there is no SyntaxRetriever, there is no work to do
-        if (!(context.SyntaxContextReceiver is SyntaxReceiver receiver))
+        if (context.SyntaxContextReceiver is not SyntaxReceiver receiver)
         {
             var loc = DiagnosticDescriptors.GetLocation(DiagnosticDescriptors.FilePath(), DiagnosticDescriptors.LineNumber());
             context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.HFG1SyntaxReceiver(), loc));

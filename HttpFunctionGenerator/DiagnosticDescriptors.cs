@@ -28,6 +28,17 @@ public static class DiagnosticDescriptors
                 isEnabledByDefault: true);
         }
 
+        public static DiagnosticDescriptor MissingDependencies()
+        {
+            return new DiagnosticDescriptor(
+                ErrorReason.MissingDependencies.Description(),
+                "Base",
+                "Missing required dependencies. Ensure that the Microsoft.Azure.Functions.Worker, Microsoft.Azure.Functions.Worker.Extensions.Http, and Microsoft.AzureFunctions.Worker.Sdk NuGet packages are added as dependencies.",
+                "Compilation",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true);
+        }
+        
         public static DiagnosticDescriptor Info(string title, string message)
         {
             return new DiagnosticDescriptor(

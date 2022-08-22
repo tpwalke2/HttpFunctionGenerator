@@ -6,5 +6,7 @@ public enum ErrorReason
 {
     Unknown,
     [Description("HFG100")]
-    NoMethod
+    NoMethod,
+    [Description("HFG101")]
+    MissingDependencies
 }
