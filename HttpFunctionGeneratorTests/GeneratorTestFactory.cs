@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using Microsoft.Azure.Functions.Worker;
 
 /* 
  * Adapted from BlazorSourceGeneratorTests
@@ -33,13 +34,18 @@ public static class GeneratorTestFactory
         var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
             .WithOptimizationLevel(OptimizationLevel.Debug)
             .WithGeneralDiagnosticOption(ReportDiagnostic.Default);
-
+        
         var references = new MetadataReference[]
         {
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(FunctionAttribute).Assembly.Location), 
         };
 
-        Compilation compilation = CSharpCompilation.Create("TestGenerator", new[] { syntaxTree }, references, compilationOptions);
+        var compilation = CSharpCompilation.Create(
+            "TestGenerator", 
+            new[] { syntaxTree },
+            references,
+            compilationOptions);
         var diagnostics = compilation.GetDiagnostics();
         if (!VerifyDiagnostics(diagnostics))
         {
