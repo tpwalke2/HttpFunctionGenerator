@@ -1,6 +1,7 @@
 using HttpFunctionGenerator.Plumbing.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using System.Runtime.CompilerServices;
 
 namespace HttpFunctionGenerator;
 
@@ -50,12 +51,12 @@ public static class DiagnosticDescriptors
                 isEnabledByDefault: false);
         }
 
-        public static string FilePath([System.Runtime.CompilerServices.CallerFilePath] string filePath = "")
+        public static string FilePath([CallerFilePath] string filePath = "")
         {
             return filePath;
         }
 
-        public static int LineNumber([System.Runtime.CompilerServices.CallerLineNumber] int lineNumber = 0)
+        public static int LineNumber([CallerLineNumber] int lineNumber = 0)
         {
             return lineNumber;
         }
