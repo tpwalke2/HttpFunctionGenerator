@@ -17,4 +17,17 @@ sealed class HttpFunctionAttribute : Attribute
     }}
 }}",
         Encoding.UTF8);
+
+    public static SourceText FromBodyAttributeSource() => SourceText.From($@"using System;
+
+namespace {Constants.PackageBaseName}.Attributes;
+
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+sealed class FromBodyAttribute : Attribute
+{{
+    public FromBodyAttribute()
+    {{
+    }}
+}}",
+        Encoding.UTF8);
 }
