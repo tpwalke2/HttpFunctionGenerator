@@ -30,4 +30,17 @@ sealed class FromBodyAttribute : Attribute
     }}
 }}",
         Encoding.UTF8);
+    
+    public static SourceText FromUrlAttributeSource() => SourceText.From($@"using System;
+
+namespace {Constants.PackageBaseName}.Attributes;
+
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+sealed class FromUrlAttribute : Attribute
+{{
+    public FromUrlAttribute()
+    {{
+    }}
+}}",
+        Encoding.UTF8);
 }
