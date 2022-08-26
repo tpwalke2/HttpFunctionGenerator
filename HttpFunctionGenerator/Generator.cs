@@ -22,7 +22,8 @@ public class Generator : ISourceGenerator
         {
             i.AddSource("HttpFunctionAttribute.g.cs", AttributeSourceProvider.FunctionAttributeSource());
             i.AddSource("FromBodyAttribute.g.cs", AttributeSourceProvider.FromBodyAttributeSource());
-            i.AddSource("FromUrlAttribute.g.cs", AttributeSourceProvider.FromUrlAttributeSource());
+            i.AddSource("FromQueryAttribute.g.cs", AttributeSourceProvider.FromQueryAttributeSource());
+            i.AddSource("FromRouteAttribute.g.cs", AttributeSourceProvider.FromRouteAttributeSource());
             i.AddSource("Outcome.g.cs", OutcomeSourceProvider.OutcomeSource());
             i.AddSource("JsonSerialization.g.cs", SerializationSourceProvider.JsonSerializationSource());
             i.AddSource("HttpRequestDataOutputMappingExtension.g.cs", OutputMappingSourceProvider.HttpRequestDataMappingSource());
