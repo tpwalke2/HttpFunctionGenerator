@@ -56,4 +56,17 @@ sealed class FromQueryAttribute : Attribute
     }}
 }}",
         Encoding.UTF8);
+    
+    public static SourceText FromHeaderAttributeSource() => SourceText.From($@"using System;
+
+namespace {Constants.PackageBaseName}.Attributes;
+
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+sealed class FromHeaderAttribute : Attribute
+{{
+    public FromHeaderAttribute()
+    {{
+    }}
+}}",
+        Encoding.UTF8);
 }

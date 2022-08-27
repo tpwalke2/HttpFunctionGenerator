@@ -22,6 +22,7 @@ public class Generator : ISourceGenerator
         {
             i.AddSource("HttpFunctionAttribute.g.cs", AttributeSourceProvider.FunctionAttributeSource());
             i.AddSource("FromBodyAttribute.g.cs", AttributeSourceProvider.FromBodyAttributeSource());
+            i.AddSource("FromHeaderAttribute.g.cs", AttributeSourceProvider.FromHeaderAttributeSource());
             i.AddSource("FromQueryAttribute.g.cs", AttributeSourceProvider.FromQueryAttributeSource());
             i.AddSource("FromRouteAttribute.g.cs", AttributeSourceProvider.FromRouteAttributeSource());
             i.AddSource("Outcome.g.cs", OutcomeSourceProvider.OutcomeSource());
