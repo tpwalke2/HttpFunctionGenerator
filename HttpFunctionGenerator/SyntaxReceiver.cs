@@ -10,7 +10,7 @@ public class SyntaxReceiver : ISyntaxContextReceiver
 {
     private readonly HashSet<ClassDeclarationSyntax> _candidateClasses = new();
     public IReadOnlyCollection<ClassDeclarationSyntax> CandidateClasses => _candidateClasses;
-        
+    
     public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
     {
         if (context.Node is not ClassDeclarationSyntax classDeclarationSyntax

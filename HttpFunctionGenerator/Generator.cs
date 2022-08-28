@@ -15,16 +15,23 @@ namespace HttpFunctionGenerator;
 [Generator]
 public class Generator : ISourceGenerator
 {
+    private static readonly IList<string> Sources = new[]
+    {
+        "Body",
+        "Header",
+        "Query",
+        "Route"
+    };
+    
     public void Initialize(GeneratorInitializationContext context)
     {
         // register known fixed source
         context.RegisterForPostInitialization(i =>
         {
             i.AddSource("HttpFunctionAttribute.g.cs", AttributeSourceProvider.FunctionAttributeSource());
-            i.AddSource("FromBodyAttribute.g.cs", AttributeSourceProvider.FromBodyAttributeSource());
-            i.AddSource("FromHeaderAttribute.g.cs", AttributeSourceProvider.FromHeaderAttributeSource());
-            i.AddSource("FromQueryAttribute.g.cs", AttributeSourceProvider.FromQueryAttributeSource());
-            i.AddSource("FromRouteAttribute.g.cs", AttributeSourceProvider.FromRouteAttributeSource());
+            i.AddSource("FromSource.g.cs", AttributeSourceProvider.FromAttributeEnumSource());
+            i.AddSource("BaseFromAttribute.g.cs", AttributeSourceProvider.BaseFromAttributeSource());
+            Sources.ForEach(source => i.AddSource($"From{source}Attribute.g.cs", AttributeSourceProvider.FromAttribute(source)));
             i.AddSource("Outcome.g.cs", OutcomeSourceProvider.OutcomeSource());
             i.AddSource("JsonSerialization.g.cs", SerializationSourceProvider.JsonSerializationSource());
             i.AddSource("HttpRequestDataOutputMappingExtension.g.cs", OutputMappingSourceProvider.HttpRequestDataMappingSource());

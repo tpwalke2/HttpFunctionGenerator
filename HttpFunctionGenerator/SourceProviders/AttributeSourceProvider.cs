@@ -10,61 +10,50 @@ public static class AttributeSourceProvider
 namespace {Constants.PackageBaseName}.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-sealed class HttpFunctionAttribute : Attribute
+public sealed class HttpFunctionAttribute : Attribute
 {{
     public HttpFunctionAttribute()
     {{
     }}
 }}",
         Encoding.UTF8);
+    
+    public static SourceText FromAttributeEnumSource() => SourceText.From(
+        $@"namespace {Constants.PackageBaseName}.Attributes;
 
-    public static SourceText FromBodyAttributeSource() => SourceText.From($@"using System;
-
-namespace {Constants.PackageBaseName}.Attributes;
-
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-sealed class FromBodyAttribute : Attribute
-{{
-    public FromBodyAttribute()
-    {{
-    }}
+public enum FromSource {{
+    Unspecified,
+    Body,
+    Header,
+    Query,
+    Route
 }}",
         Encoding.UTF8);
     
-    public static SourceText FromRouteAttributeSource() => SourceText.From($@"using System;
+    public static SourceText BaseFromAttributeSource() => SourceText.From($@"using System;
 
 namespace {Constants.PackageBaseName}.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-sealed class FromRouteAttribute : Attribute
+public abstract class BaseFromAttribute : Attribute
 {{
-    public FromRouteAttribute()
+    public BaseFromAttribute(FromSource source = FromSource.Unspecified)
     {{
+        Source = source;
     }}
+
+    public FromSource Source {{ get; init; }}
 }}",
         Encoding.UTF8);
-    
-    public static SourceText FromQueryAttributeSource() => SourceText.From($@"using System;
+
+    public static SourceText FromAttribute(string source) => SourceText.From($@"using System;
 
 namespace {Constants.PackageBaseName}.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-sealed class FromQueryAttribute : Attribute
+public sealed class From{source}Attribute : BaseFromAttribute
 {{
-    public FromQueryAttribute()
-    {{
-    }}
-}}",
-        Encoding.UTF8);
-    
-    public static SourceText FromHeaderAttributeSource() => SourceText.From($@"using System;
-
-namespace {Constants.PackageBaseName}.Attributes;
-
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-sealed class FromHeaderAttribute : Attribute
-{{
-    public FromHeaderAttribute()
+    public From{source}Attribute() : base(FromSource.{source})
     {{
     }}
 }}",
