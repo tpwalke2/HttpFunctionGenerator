@@ -22,7 +22,9 @@ public class Generator : ISourceGenerator
         "Query",
         "Route"
     };
-    
+
+    private static readonly int MaxAllowedMethodParameters = 1;
+
     public void Initialize(GeneratorInitializationContext context)
     {
         // register known fixed source
@@ -32,6 +34,7 @@ public class Generator : ISourceGenerator
             i.AddSource("FromSource.g.cs", AttributeSourceProvider.FromAttributeEnumSource());
             i.AddSource("BaseFromAttribute.g.cs", AttributeSourceProvider.BaseFromAttributeSource());
             Sources.ForEach(source => i.AddSource($"From{source}Attribute.g.cs", AttributeSourceProvider.FromAttribute(source)));
+            
             i.AddSource("Outcome.g.cs", OutcomeSourceProvider.OutcomeSource());
             i.AddSource("JsonSerialization.g.cs", SerializationSourceProvider.JsonSerializationSource());
             i.AddSource("HttpRequestDataOutputMappingExtension.g.cs", OutputMappingSourceProvider.HttpRequestDataMappingSource());
@@ -73,6 +76,7 @@ public class Generator : ISourceGenerator
                 .Where(member => member.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
                 .Where(member => member.IsKind(SyntaxKind.MethodDeclaration))
                 .Cast<MethodDeclarationSyntax>()
+                .Where(HasValidAmountOfParameters)
                 .Select(method => (method, method.GetReturnType(context.Compilation.GetSemanticModel(method.SyntaxTree))))
                 .Where(x => HasValidReturnType(x.Item2, outcomeTypeSymbol))
                 .ToList();
@@ -91,6 +95,9 @@ public class Generator : ISourceGenerator
                 BuildFunctionClass(classDeclarationSyntax, publicMethods, context));
         }
     }
+
+    private static bool HasValidAmountOfParameters(MethodDeclarationSyntax method) =>
+        method.ParameterList.Parameters.Count <= MaxAllowedMethodParameters;
 
     private static bool HasValidReturnType(
         ITypeSymbol methodReturnTypeSymbol,
