@@ -33,12 +33,15 @@ public class Generator : ISourceGenerator
             i.AddSource("HttpFunctionAttribute.g.cs", AttributeSourceProvider.FunctionAttributeSource());
             i.AddSource("FromSource.g.cs", AttributeSourceProvider.FromAttributeEnumSource());
             i.AddSource("BaseFromAttribute.g.cs", AttributeSourceProvider.BaseFromAttributeSource());
-            Sources.ForEach(source => i.AddSource($"From{source}Attribute.g.cs", AttributeSourceProvider.FromAttribute(source)));
-            
+            Sources.ForEach(source => i.AddSource($"From{source}Attribute.g.cs",
+                                                  AttributeSourceProvider.FromAttribute(source)));
+
             i.AddSource("Outcome.g.cs", OutcomeSourceProvider.OutcomeSource());
             i.AddSource("JsonSerialization.g.cs", SerializationSourceProvider.JsonSerializationSource());
-            i.AddSource("HttpRequestDataOutputMappingExtension.g.cs", OutputMappingSourceProvider.HttpRequestDataMappingSource());
-            i.AddSource("ServiceCollectionExtensions.g.cs", ExtensionsSourceProvider.ServiceCollectionExtensionsSource());
+            i.AddSource("HttpRequestDataOutputMappingExtension.g.cs",
+                        OutputMappingSourceProvider.HttpRequestDataMappingSource());
+            i.AddSource("ServiceCollectionExtensions.g.cs",
+                        ExtensionsSourceProvider.ServiceCollectionExtensionsSource());
             i.AddSource("HostBuilderExtensions.g.cs", ExtensionsSourceProvider.HostBuilderConfigurationSource());
             i.AddSource("EnumerableExtensions.g.cs", ExtensionsSourceProvider.EnumerableExtensionsSource());
             i.AddSource("TypeHelpers.g.cs", HelpersSourceProvider.TypeHelpersSource());
@@ -50,36 +53,46 @@ public class Generator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
-        var typeSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Azure.Functions.Worker.FunctionAttribute");
+        var typeSymbol =
+            context.Compilation.GetTypeByMetadataName("Microsoft.Azure.Functions.Worker.FunctionAttribute");
         if (typeSymbol == null)
         {
             var loc = DiagnosticDescriptors.GetLocation(DiagnosticDescriptors.FilePath(),
-                DiagnosticDescriptors.LineNumber());
+                                                        DiagnosticDescriptors.LineNumber());
             context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.MissingDependencies(), loc));
             return;
         }
-        
+
         // if there is no SyntaxRetriever, there is no work to do
         if (context.SyntaxContextReceiver is not SyntaxReceiver receiver)
         {
-            var loc = DiagnosticDescriptors.GetLocation(DiagnosticDescriptors.FilePath(), DiagnosticDescriptors.LineNumber());
+            var loc = DiagnosticDescriptors.GetLocation(DiagnosticDescriptors.FilePath(),
+                                                        DiagnosticDescriptors.LineNumber());
             context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.HFG1SyntaxReceiver(), loc));
             return;
         }
 
-        var outcomeTypeSymbol = context.Compilation.GetTypeByMetadataName($"{Constants.PackageBaseName}.Models.Outcome");
-        
+        var outcomeTypeSymbol =
+            context.Compilation.GetTypeByMetadataName($"{Constants.PackageBaseName}.Models.Outcome");
+
         foreach (var classDeclarationSyntax in receiver.CandidateClasses)
         {
             var publicMethods = classDeclarationSyntax
-                .Members
-                .Where(member => member.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
-                .Where(member => member.IsKind(SyntaxKind.MethodDeclaration))
-                .Cast<MethodDeclarationSyntax>()
-                .Where(HasValidAmountOfParameters)
-                .Select(method => (method, method.GetReturnType(context.Compilation.GetSemanticModel(method.SyntaxTree))))
-                .Where(x => HasValidReturnType(x.Item2, outcomeTypeSymbol))
-                .ToList();
+                                .Members
+                                .Where(member => member.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
+                                .Where(member => member.IsKind(SyntaxKind.MethodDeclaration))
+                                .Cast<MethodDeclarationSyntax>()
+                                .Where(HasValidAmountOfParameters)
+                                .Select(method =>
+                                {
+                                    var semanticModel = context.Compilation.GetSemanticModel(method.SyntaxTree);
+                                    return (
+                                        method,
+                                        method.GetReturnType(semanticModel),
+                                        method.GetParameterType(semanticModel));
+                                })
+                                .Where(x => HasValidReturnType(x.Item2, outcomeTypeSymbol))
+                                .ToList();
 
             if (!publicMethods.Any())
             {
@@ -107,20 +120,24 @@ public class Generator : ISourceGenerator
 
         if (methodReturnTypeSymbol is not INamedTypeSymbol { IsGenericType: true } namedTypeSymbol) return false;
 
-        return namedTypeSymbol.TypeArguments.Length == 1 
+        return namedTypeSymbol.TypeArguments.Length == 1
                && namedTypeSymbol.TypeArguments[0].IsAssignableFrom(outcomeTypeSymbol);
     }
 
     private static SourceText BuildFunctionClass(
         ClassDeclarationSyntax classDeclarationSyntax,
-        IEnumerable<(MethodDeclarationSyntax Method, ITypeSymbol ReturnType)> publicMethods,
+        IEnumerable<(
+            MethodDeclarationSyntax Method,
+            ITypeSymbol ReturnType,
+            ITypeSymbol ParameterType)> publicMethods,
         GeneratorExecutionContext context)
     {
-        var namespaceName = classDeclarationSyntax.NamedTypeSymbol(context.Compilation).ContainingNamespace.ToDisplayString();
+        var namespaceName = classDeclarationSyntax.NamedTypeSymbol(context.Compilation).ContainingNamespace
+                                                  .ToDisplayString();
 
         var builtMethods = publicMethods
-            .Select(pm => BuildFunctionMethod(pm, context))
-            .ToList();
+                           .Select(pm => BuildFunctionMethod(pm, context))
+                           .ToList();
 
         var asyncUsing = builtMethods.Any(x => x.IsAsync)
             ? @"
@@ -144,24 +161,36 @@ public class {classDeclarationSyntax.Identifier.ValueText}_Functions
 ");
 
         builtMethods.ForEach(x => source.AppendLine(x.MethodText));
-        
+
         source.Append(@"}");
 
         return SourceText.From(source.ToString(), Encoding.UTF8);
     }
 
     private static (bool IsAsync, string MethodText) BuildFunctionMethod(
-        (MethodDeclarationSyntax Method, ITypeSymbol ReturnType) methodInfo,
+        (MethodDeclarationSyntax Method, ITypeSymbol ReturnType, ITypeSymbol ParameterType) methodInfo,
         GeneratorExecutionContext context)
     {
         var methodName = methodInfo.Method.Identifier.Text;
         var verb = methodName.StartsWith("Get", StringComparison.OrdinalIgnoreCase)
             ? "get"
             : "post";
-
-            var taskSymbol = context.Compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
-        var isAsync = methodInfo.ReturnType.InheritsFrom(taskSymbol);
         
+        var taskSymbol = context.Compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+        var isAsync    = methodInfo.ReturnType.InheritsFrom(taskSymbol);
+
+        var inputBindingCall           = "";
+        var inputParameterVariableName = "";
+
+        if (methodInfo.ParameterType != null)
+        {
+            isAsync = true;
+            var bindingVariableName = verb == "get" ? "query" : "command";
+            inputBindingCall = $@"
+        var {bindingVariableName} = await req.To<{methodInfo.ParameterType.Name}>();";
+            inputParameterVariableName = bindingVariableName;
+        }
+
         var returnType = isAsync
             ? "async Task<HttpResponseData>"
             : "HttpResponseData";
@@ -176,8 +205,8 @@ public class {classDeclarationSyntax.Identifier.ValueText}_Functions
             ""{verb}"",
             Route = null)] HttpRequestData req,
         FunctionContext executionContext)
-    {{
-        var outcome = {awaitPrefix}_controller.{methodName}();
+    {{{inputBindingCall}
+        var outcome = {awaitPrefix}_controller.{methodName}({inputParameterVariableName});
         return {awaitPrefix}req.CreateResponse(outcome);
     }}");
     }

@@ -56,7 +56,7 @@ public class C_Functions
             Route = null)] HttpRequestData req,
         FunctionContext executionContext)
     {{
-        var query = req.Bind<ResourceQuery>();
+        var query = await req.To<ResourceQuery>();
         var outcome = await _controller.GetResource(query);
         return await req.CreateResponse(outcome);
     }}
