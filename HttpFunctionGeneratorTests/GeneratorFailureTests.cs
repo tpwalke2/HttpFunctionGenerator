@@ -17,7 +17,8 @@ public class C { }
 ";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.False(result.Diagnostics.After.Any(x => x.Severity == DiagnosticSeverity.Error));
-        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        var s = result.Compilation?.GetSymbolsWithName("C_Functions");
+        Assert.NotNull(s);
         Assert.Empty(s);
     }
     
@@ -34,7 +35,8 @@ class C {{}}
 ";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.False(result.Diagnostics.After.Any(x => x.Severity == DiagnosticSeverity.Error));
-        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        var s = result.Compilation?.GetSymbolsWithName("C_Functions");
+        Assert.NotNull(s);
         Assert.Empty(s);
     }
 
@@ -51,7 +53,8 @@ public class C {{}}";
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.Single(result.Diagnostics.After);
         Assert.Equal("HFG100", result.Diagnostics.After[0].Id);
-        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        var s = result.Compilation?.GetSymbolsWithName("C_Functions");
+        Assert.NotNull(s);
         Assert.Empty(s);
     }
     
@@ -70,7 +73,8 @@ public class C {{
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.Single(result.Diagnostics.After);
         Assert.Equal("HFG100", result.Diagnostics.After[0].Id);
-        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        var s = result.Compilation?.GetSymbolsWithName("C_Functions");
+        Assert.NotNull(s);
         Assert.Empty(s);
     }
     
@@ -89,7 +93,8 @@ public class C {{
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.Single(result.Diagnostics.After);
         Assert.Equal("HFG100", result.Diagnostics.After[0].Id);
-        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        var s = result.Compilation?.GetSymbolsWithName("C_Functions");
+        Assert.NotNull(s);
         Assert.Empty(s);
     }
     
@@ -110,7 +115,8 @@ public class C {{
         var result = GeneratorTestFactory.RunGenerator(source);
         Assert.Single(result.Diagnostics.After);
         Assert.Equal("HFG100", result.Diagnostics.After[0].Id);
-        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        var s = result.Compilation?.GetSymbolsWithName("C_Functions");
+        Assert.NotNull(s);
         Assert.Empty(s);
     }
 }

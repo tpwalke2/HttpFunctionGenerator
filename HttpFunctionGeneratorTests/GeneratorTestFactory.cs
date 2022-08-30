@@ -25,9 +25,9 @@ public static class GeneratorTestFactory
         "CS0012", "CS0616", "CS0246", "CS0103"
     };
 
-    public static (Compilation Compilation,
+    public static (Compilation? Compilation,
         (ImmutableArray<Diagnostic> Before, ImmutableArray<Diagnostic> After) Diagnostics,
-        GeneratorDriverRunResult RunResult) RunGenerator(string source)
+        GeneratorDriverRunResult? RunResult) RunGenerator(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(source, Encoding.UTF8));
 

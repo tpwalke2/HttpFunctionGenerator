@@ -34,7 +34,7 @@ public enum FromSource {{
 
 namespace {Constants.PackageBaseName}.Attributes;
 
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 public abstract class BaseFromAttribute : Attribute
 {{
     public BaseFromAttribute(FromSource source = FromSource.Unspecified)
@@ -50,7 +50,6 @@ public abstract class BaseFromAttribute : Attribute
 
 namespace {Constants.PackageBaseName}.Attributes;
 
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 public sealed class From{source}Attribute : BaseFromAttribute
 {{
     public From{source}Attribute() : base(FromSource.{source})

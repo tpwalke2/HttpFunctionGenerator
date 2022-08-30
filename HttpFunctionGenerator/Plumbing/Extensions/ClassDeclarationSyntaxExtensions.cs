@@ -6,11 +6,12 @@ namespace HttpFunctionGenerator.Plumbing.Extensions;
 
 public static class ClassDeclarationSyntaxExtensions
 {
-    public static INamedTypeSymbol NamedTypeSymbol(this ClassDeclarationSyntax classDeclarationSyntax, Compilation compilation)
+    public static INamedTypeSymbol? NamedTypeSymbol(this ClassDeclarationSyntax classDeclarationSyntax, Compilation compilation)
     {
         if (compilation == null) throw new ArgumentNullException(nameof(compilation));
 
-        var model = compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
-        return model.GetDeclaredSymbol(classDeclarationSyntax) as INamedTypeSymbol;
+        return compilation
+            .GetSemanticModel(classDeclarationSyntax.SyntaxTree)
+            .GetDeclaredSymbol(classDeclarationSyntax) as INamedTypeSymbol;
     }
 }

@@ -53,9 +53,13 @@ public class Generator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
-        var typeSymbol =
+        var dependencyCheckTypeSymbol =
             context.Compilation.GetTypeByMetadataName("Microsoft.Azure.Functions.Worker.FunctionAttribute");
-        if (typeSymbol == null)
+        var taskSymbol = context.Compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+        var outcomeTypeSymbol =
+            context.Compilation.GetTypeByMetadataName($"{Constants.PackageBaseName}.Models.Outcome");
+        
+        if (dependencyCheckTypeSymbol == null || taskSymbol == null || outcomeTypeSymbol == null)
         {
             var loc = DiagnosticDescriptors.GetLocation(DiagnosticDescriptors.FilePath(),
                                                         DiagnosticDescriptors.LineNumber());
@@ -72,9 +76,6 @@ public class Generator : ISourceGenerator
             return;
         }
 
-        var outcomeTypeSymbol =
-            context.Compilation.GetTypeByMetadataName($"{Constants.PackageBaseName}.Models.Outcome");
-
         foreach (var classDeclarationSyntax in receiver.CandidateClasses)
         {
             var publicMethods = classDeclarationSyntax
@@ -88,7 +89,7 @@ public class Generator : ISourceGenerator
                                     var semanticModel = context.Compilation.GetSemanticModel(method.SyntaxTree);
                                     return (
                                         method,
-                                        method.GetReturnType(semanticModel),
+                                        method.GetReturnType(semanticModel)!,
                                         method.GetParameterType(semanticModel));
                                 })
                                 .Where(x => HasValidReturnType(x.Item2, outcomeTypeSymbol))
@@ -103,9 +104,12 @@ public class Generator : ISourceGenerator
                 continue;
             }
 
-            context.AddSource(
-                $"{classDeclarationSyntax.Identifier.ValueText}_Functions.g.cs",
-                BuildFunctionClass(classDeclarationSyntax, publicMethods, context));
+            var sourceText = BuildFunctionClass(classDeclarationSyntax, publicMethods, taskSymbol, context);
+
+            if (sourceText != null)
+                context.AddSource(
+                    $"{classDeclarationSyntax.Identifier.ValueText}_Functions.g.cs",
+                    sourceText);
         }
     }
 
@@ -113,9 +117,10 @@ public class Generator : ISourceGenerator
         method.ParameterList.Parameters.Count <= MaxAllowedMethodParameters;
 
     private static bool HasValidReturnType(
-        ITypeSymbol methodReturnTypeSymbol,
+        ITypeSymbol? methodReturnTypeSymbol,
         ITypeSymbol outcomeTypeSymbol)
     {
+        if (methodReturnTypeSymbol == null) return false;
         if (methodReturnTypeSymbol.IsAssignableFrom(outcomeTypeSymbol)) return true;
 
         if (methodReturnTypeSymbol is not INamedTypeSymbol { IsGenericType: true } namedTypeSymbol) return false;
@@ -124,19 +129,25 @@ public class Generator : ISourceGenerator
                && namedTypeSymbol.TypeArguments[0].IsAssignableFrom(outcomeTypeSymbol);
     }
 
-    private static SourceText BuildFunctionClass(
+    private static SourceText? BuildFunctionClass(
         ClassDeclarationSyntax classDeclarationSyntax,
         IEnumerable<(
             MethodDeclarationSyntax Method,
             ITypeSymbol ReturnType,
-            ITypeSymbol ParameterType)> publicMethods,
+            ITypeSymbol? ParameterType)> publicMethods,
+        ITypeSymbol taskSymbol,
         GeneratorExecutionContext context)
     {
-        var namespaceName = classDeclarationSyntax.NamedTypeSymbol(context.Compilation).ContainingNamespace
-                                                  .ToDisplayString();
+        var namespaceName = classDeclarationSyntax
+            .NamedTypeSymbol(context.Compilation)?
+            .ContainingNamespace
+            .ToDisplayString();
+
+        if (string.IsNullOrEmpty(namespaceName)) return null;
 
         var builtMethods = publicMethods
-                           .Select(pm => BuildFunctionMethod(pm, context))
+                           .Select(pm => BuildFunctionMethod(pm, taskSymbol))
+                           .Where(mt => !string.IsNullOrEmpty(mt.MethodText))
                            .ToList();
 
         var asyncUsing = builtMethods.Any(x => x.IsAsync)
@@ -168,16 +179,15 @@ public class {classDeclarationSyntax.Identifier.ValueText}_Functions
     }
 
     private static (bool IsAsync, string MethodText) BuildFunctionMethod(
-        (MethodDeclarationSyntax Method, ITypeSymbol ReturnType, ITypeSymbol ParameterType) methodInfo,
-        GeneratorExecutionContext context)
+        (MethodDeclarationSyntax Method, ITypeSymbol ReturnType, ITypeSymbol? ParameterType) methodInfo,
+        ITypeSymbol taskSymbol)
     {
         var methodName = methodInfo.Method.Identifier.Text;
         var verb = methodName.StartsWith("Get", StringComparison.OrdinalIgnoreCase)
             ? "get"
             : "post";
         
-        var taskSymbol = context.Compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
-        var isAsync    = methodInfo.ReturnType.InheritsFrom(taskSymbol);
+        var isAsync = methodInfo.ReturnType.InheritsFrom(taskSymbol);
 
         var inputBindingCall           = "";
         var inputParameterVariableName = "";
@@ -199,7 +209,7 @@ public class {classDeclarationSyntax.Identifier.ValueText}_Functions
 
         return (isAsync, $@"
     [Function(""{methodName}"")]
-    public {returnType} Run{asyncSuffix}(
+    public {returnType} {methodName}{asyncSuffix}(
         [HttpTrigger(
             AuthorizationLevel.Function,
             ""{verb}"",

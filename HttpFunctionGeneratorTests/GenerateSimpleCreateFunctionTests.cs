@@ -29,7 +29,8 @@ public class C {{
     public void ShouldCreateSingleContainerClass()
     {
         var result = GeneratorTestFactory.RunGenerator(Source);
-        var s = result.Compilation.GetSymbolsWithName("C_Functions");
+        var s = result.Compilation?.GetSymbolsWithName("C_Functions");
+        Assert.NotNull(s);
         Assert.Single(s);
     }
     
@@ -52,7 +53,7 @@ public class C_Functions
     }}
 
     [Function(""CreateResource"")]
-    public HttpResponseData Run(
+    public HttpResponseData CreateResource(
         [HttpTrigger(
             AuthorizationLevel.Function,
             ""post"",
@@ -65,6 +66,6 @@ public class C_Functions
 }}";
         
         var result = GeneratorTestFactory.RunGenerator(Source);
-        Assert.Equal(expected, result.RunResult.GeneratedTrees.First(t => t.FilePath.Contains("C_Functions")).GetText().ToString());
+        Assert.Equal(expected, result.RunResult?.GeneratedTrees.First(t => t.FilePath.Contains("C_Functions")).GetText().ToString());
     }
 }

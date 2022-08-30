@@ -5,7 +5,7 @@ namespace HttpFunctionGenerator.Extensions;
 
 public static class SyntaxNodeExtensions
 {
-    public static ITypeSymbol GetReturnType(this MethodDeclarationSyntax methodDeclarationSyntax, SemanticModel semanticModel)
+    public static ITypeSymbol? GetReturnType(this MethodDeclarationSyntax methodDeclarationSyntax, SemanticModel semanticModel)
     {
         return semanticModel.GetTypeInfo(methodDeclarationSyntax.ReturnType).Type;
     }

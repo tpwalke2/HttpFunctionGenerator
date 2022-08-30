@@ -48,7 +48,7 @@ public class C_Functions
     }}
 
     [Function(""GetResource"")]
-    public async Task<HttpResponseData> RunAsync(
+    public async Task<HttpResponseData> GetResourceAsync(
         [HttpTrigger(
             AuthorizationLevel.Function,
             ""get"",
@@ -61,6 +61,6 @@ public class C_Functions
 }}";
         
         var result = GeneratorTestFactory.RunGenerator(Source);
-        Assert.Equal(expected, result.RunResult.GeneratedTrees.First(t => t.FilePath.Contains("C_Functions")).GetText().ToString());
+        Assert.Equal(expected, result.RunResult?.GeneratedTrees.First(t => t.FilePath.Contains("C_Functions")).GetText().ToString());
     }
 }
