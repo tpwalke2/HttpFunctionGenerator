@@ -183,9 +183,7 @@ public class {classDeclarationSyntax.Identifier.ValueText}_Functions
         ITypeSymbol taskSymbol)
     {
         var methodName = methodInfo.Method.Identifier.Text;
-        var verb = methodName.StartsWith("Get", StringComparison.OrdinalIgnoreCase)
-            ? "get"
-            : "post";
+        var verb       = GetVerb(methodName);
         
         var isAsync = methodInfo.ReturnType.InheritsFrom(taskSymbol);
 
@@ -219,5 +217,23 @@ public class {classDeclarationSyntax.Identifier.ValueText}_Functions
         var outcome = {awaitPrefix}_controller.{methodName}({inputParameterVariableName});
         return {awaitPrefix}req.CreateResponse(outcome);
     }}");
+    }
+
+    private static readonly IDictionary<string, string> PrefixVerbMap = new Dictionary<string, string>
+    {
+        { "get", "get" },
+        { "put", "put" },
+        { "update", "put" },
+        { "post", "post" },
+        { "create", "post" }
+    };
+
+    private static string GetVerb(string methodName)
+    {
+        var kvp = PrefixVerbMap
+            .FirstOrDefault(kvp => methodName.StartsWith(kvp.Key, StringComparison.OrdinalIgnoreCase));
+        return kvp.IsDefault()
+            ? "get"
+            : kvp.Value;
     }
 }
