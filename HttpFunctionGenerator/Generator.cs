@@ -58,7 +58,7 @@ public class Generator : ISourceGenerator
         var taskSymbol = context.Compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
         var outcomeTypeSymbol =
             context.Compilation.GetTypeByMetadataName($"{Constants.PackageBaseName}.Models.Outcome");
-        
+
         if (dependencyCheckTypeSymbol == null || taskSymbol == null || outcomeTypeSymbol == null)
         {
             var loc = DiagnosticDescriptors.GetLocation(DiagnosticDescriptors.FilePath(),
@@ -139,9 +139,9 @@ public class Generator : ISourceGenerator
         GeneratorExecutionContext context)
     {
         var namespaceName = classDeclarationSyntax
-            .NamedTypeSymbol(context.Compilation)?
-            .ContainingNamespace
-            .ToDisplayString();
+                            .NamedTypeSymbol(context.Compilation)?
+                            .ContainingNamespace
+                            .ToDisplayString();
 
         if (string.IsNullOrEmpty(namespaceName)) return null;
 
@@ -184,9 +184,8 @@ public class {classDeclarationSyntax.Identifier.ValueText}_Functions
     {
         var methodName = methodInfo.Method.Identifier.Text;
         var verb       = GetVerb(methodName);
-        
-        var isAsync = methodInfo.ReturnType.InheritsFrom(taskSymbol);
 
+        var isAsync                    = methodInfo.ReturnType.InheritsFrom(taskSymbol);
         var inputBindingCall           = "";
         var inputParameterVariableName = "";
 
@@ -225,7 +224,9 @@ public class {classDeclarationSyntax.Identifier.ValueText}_Functions
         { "put", "put" },
         { "update", "put" },
         { "post", "post" },
-        { "create", "post" }
+        { "create", "post" },
+        { "delete", "delete" },
+        { "remove", "delete" }
     };
 
     private static string GetVerb(string methodName)
