@@ -32,6 +32,7 @@ public class Generator : ISourceGenerator
         {
             i.AddSource("HttpFunctionAttribute.g.cs", AttributeSourceProvider.FunctionAttributeSource());
             i.AddSource("FromSource.g.cs", AttributeSourceProvider.FromAttributeEnumSource());
+            i.AddSource("DefaultBindingSourceAttribute.g.cs", AttributeSourceProvider.DefaultBindingSourceAttributeSource());
             i.AddSource("BaseFromAttribute.g.cs", AttributeSourceProvider.BaseFromAttributeSource());
             Sources.ForEach(source => i.AddSource($"From{source}Attribute.g.cs",
                                                   AttributeSourceProvider.FromAttribute(source)));

@@ -30,6 +30,22 @@ public enum FromSource {{
 }}",
         Encoding.UTF8);
     
+    public static SourceText DefaultBindingSourceAttributeSource() => SourceText.From($@"using System;
+
+namespace {Constants.PackageBaseName}.Attributes;
+
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+public sealed class DefaultBindingSourceAttribute : Attribute
+{{
+    public DefaultBindingSourceAttribute(FromSource source = FromSource.Unspecified)
+    {{
+        DefaultSource = source;
+    }}
+
+    public FromSource DefaultSource {{ get; init; }}
+}}",
+                                                                          Encoding.UTF8);
+    
     public static SourceText BaseFromAttributeSource() => SourceText.From($@"using System;
 
 namespace {Constants.PackageBaseName}.Attributes;
